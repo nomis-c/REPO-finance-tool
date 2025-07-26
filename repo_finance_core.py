@@ -220,50 +220,6 @@ class RepoFinanceManager:
 
         return True, new_earnings
 
-    def add_shared_earnings(self, total_amount, description="Round earnings"):
-        """
-        Add earnings that are split equally among all players with remainder to group fund.
-
-        Takes a total amount earned by the group and divides it equally among all players
-        using thousand-unit rounding. Any remainder money goes to the group fund.
-
-        Parameters
-        ----------
-        total_amount : float
-            Total amount to be split among all players.
-        description : str, optional
-            Description of the earnings source (default: "Round earnings").
-
-        Returns
-        -------
-        bool
-            True if earnings were successfully added, False if no players exist.
-        """
-        if len(self.players) == 0:
-            return False
-
-        per_player_exact = total_amount / len(self.players)
-        per_player_rounded = round_money_down(per_player_exact)
-
-        # Add rounded amount to each player
-        for player in self.players:
-            self.players[player] += per_player_rounded
-
-        # Calculate remainder and add to group fund
-        total_distributed = per_player_rounded * len(self.players)
-        remainder = total_amount - total_distributed
-        self.group_fund += remainder
-
-        self.transaction_history.append({
-            'round': self.round_number,
-            'type': 'shared_earnings',
-            'description': description,
-            'total_amount': total_amount,
-            'per_player': per_player_rounded,
-            'remainder_to_fund': remainder,
-            'players': list(self.players.keys())
-        })
-        return True
 
     def add_kill_bonus(self, amount, players_involved, description="Kill bonus", use_group_fund=False):
         """
