@@ -9,7 +9,7 @@ transactions, balances, and transaction history.
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 from tkinter import font as tkFont
-
+from repo_finance_file_manager import RepoFileManager
 from repo_finance_core import RepoFinanceManager, round_money_down
 
 
@@ -33,11 +33,13 @@ class RepoFinanceGUI:
         """
         self.root = root
         self.manager = RepoFinanceManager()
+        self.file_manager = RepoFileManager(self.manager)
 
         # Configure main window
         self.root.title("🤖 REPO Finance Manager")
         self.root.geometry("1000x700")
         self.root.configure(bg='#1a1a2e')
+
 
         # Configure styles
         self.setup_styles()
@@ -137,6 +139,16 @@ class RepoFinanceGUI:
         history_frame = tk.Frame(notebook, bg='#2c2c54')
         notebook.add(history_frame, text="📜 History")
         self.create_history_tab(history_frame)
+
+        file_frame = tk.Frame(title_frame, bg='#1a1a2e')
+        file_frame.pack(pady=5)
+
+        ttk.Button(file_frame, text="💾 Save Session", command=self.save_session,
+                   style='Custom.TButton').pack(side='left', padx=2)
+        ttk.Button(file_frame, text="📁 Load Session", command=self.load_session,
+                   style='Custom.TButton').pack(side='left', padx=2)
+        ttk.Button(file_frame, text="📄 Export Summary", command=self.export_summary,
+                   style='Custom.TButton').pack(side='left', padx=2)
 
     def create_players_tab(self, parent):
         """
@@ -832,12 +844,21 @@ class RepoFinanceGUI:
             messagebox.showerror("Error", "Please select a transaction to delete.")
 
     def reset_all(self):
-        """
-        Reset all data after confirmation.
-
-        Clears all players, transactions, and resets to initial state after
-        user confirmation. Updates display to show empty state.
-        """
+        """Reset all data after confirmation."""
         if messagebox.askyesno("Confirm", "This will reset all data. Are you sure?"):
             self.manager.reset_all()
             self.update_display()
+
+    def save_session(self):
+        """Save current session to a file."""
+        if self.file_manager.save_session():
+            self.update_display()
+
+    def load_session(self):
+        """Load session from a file."""
+        if self.file_manager.load_session():
+            self.update_display()
+
+    def export_summary(self):
+        """Export a summary report to a text file."""
+        self.file_manager.export_summary()
