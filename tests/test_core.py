@@ -57,12 +57,82 @@ def test_shared_earnings_auto_basic():
     m = RepoFinanceManager()
     m.add_player("Simon")
     m.add_player("Jazkub")
+
     success, total_new, shared = m.add_shared_earnings_auto(30000)
-    assert success == True
+
+    # Method return values are part of the public contract
+    assert success is True
+    assert total_new == 30000
+    assert shared == 15000
+
+    # Final balances should reflect the shared earnings
     assert m.players["Simon"] == 15000
     assert m.players["Jazkub"] == 15000
 
 
+def test_shared_earnings_auto_no_players():
+    """Calling add_shared_earnings_auto with no players should fail and not allocate money."""
+    m = RepoFinanceManager()
+
+    success, total_new, shared = m.add_shared_earnings_auto(30000)
+
+    assert success is False
+    assert total_new == 0
+    assert shared == 0
+    assert m.players == {}
+
+
+def test_shared_earnings_auto_zero_total_game_money():
+    """Zero total_game_money should be treated as invalid input."""
+    m = RepoFinanceManager()
+    m.add_player("Simon")
+
+    success, total_new, shared = m.add_shared_earnings_auto(0)
+
+    assert success is False
+    assert total_new == 0
+    assert shared == 0
+    # Balance should remain unchanged
+    assert m.players["Simon"] == 0
+
+
+def test_shared_earnings_auto_negative_total_game_money():
+    """Negative total_game_money should be treated as invalid input."""
+    m = RepoFinanceManager()
+    m.add_player("Simon")
+
+    success, total_new, shared = m.add_shared_earnings_auto(-1000)
+
+    assert success is False
+    assert total_new == 0
+    assert shared == 0
+    # Balance should remain unchanged
+    assert m.players["Simon"] == 0
+
+
+def test_shared_earnings_auto_total_less_than_round_start():
+    """
+    total_game_money lower than total_money_at_round_start should be rejected.
+
+    This simulates a case where the game has lost money compared to the start of the round,
+    which should not produce shared earnings.
+    """
+    m = RepoFinanceManager()
+    m.add_player("Simon")
+
+    # Give Simon some money and start a new round so that total_money_at_round_start is > 0
+    m.players["Simon"] = 20000
+    m.start_new_round()
+    assert m.total_money_at_round_start == 20000
+
+    # Now report a lower total_game_money than we had at round start
+    success, total_new, shared = m.add_shared_earnings_auto(15000)
+
+    assert success is False
+    assert total_new == 0
+    assert shared == 0
+    # Balances should not be adjusted on failure
+    assert m.players["Simon"] == 20000
 def test_shared_earnings_remainder_to_fund():
     """5k split between 4 players = 1k each, 1k to fund"""
     m = RepoFinanceManager()
