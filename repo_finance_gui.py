@@ -71,7 +71,7 @@ def balances_display():
             ui.label(format_money(total)).classes("text-black text-2xl font-bold")
 
     with ui.card().classes("w-full bg-orange-500"):
-        ui.label("Group Fund (Puffer)").classes("text-white font-bold text-lg")
+        ui.label("Group Fund (Buffer)").classes("text-white font-bold text-lg")
         ui.label(format_money(manager.group_fund)).classes(
             "text-white text-2xl font-bold"
         )
